@@ -42,7 +42,7 @@
   .marca .logo-mini { width: 38px; height: 38px; object-fit: contain; filter: invert(1); flex: none; }
   .entrada .logo-entrada { display: block; width: 110px; height: 110px; object-fit: contain; margin: 0 auto 6px; }
   body::before { content: ""; position: fixed; inset: 0; z-index: 4; pointer-events: none;
-    background: url(/marca-dagua.png) no-repeat center center / min(62vmin, 560px); opacity: .055; }
+    background: url(marca-dagua.png) no-repeat center center / min(62vmin, 560px); opacity: .055; }
   @media (prefers-color-scheme: dark) { body::before { filter: invert(1); opacity: .06; } .faixa-timbre { border-bottom-color: #000; } }
   body:has(#telaEntrada:not(.oculto))::before { display: none; }
   @media print { body::before { opacity: .08; } .faixa-timbre { border: 0; } }
@@ -196,7 +196,7 @@
 <!-- entrada -->
 <section id="telaEntrada" class="entrada oculto">
   <form id="formEntrada" autocomplete="on">
-    <img class="logo-entrada" src="/marca-dagua.png" alt="Castelão Advocacia">
+    <img class="logo-entrada" src="marca-dagua.png" alt="Castelão Advocacia">
     <h2 id="entradaTitulo">Entrar</h2>
     <p id="entradaTexto">App Processos · Castelão Advocacia</p>
     <div id="campoNome" class="oculto">
@@ -214,11 +214,11 @@
 
 <!-- app -->
 <div id="telaApp" class="oculto">
-  <div class="faixa-timbre"><img src="/logo-timbre.jpg" alt="Dr. Frederico Castelão dos Santos, OAB 451.038"></div>
+  <div class="faixa-timbre"><img src="logo-timbre.jpg" alt="Dr. Frederico Castelão dos Santos, OAB 451.038"></div>
   <header class="topo">
     <div class="topo-in">
       <div class="marca">
-        <img class="logo-mini" src="/marca-dagua.png" alt="">
+        <img class="logo-mini" src="marca-dagua.png" alt="">
         <div>App Processos<small>Castelão Advocacia</small></div>
       </div>
       <nav class="abas"><a href="#/" data-aba="intimacoes">Intimações</a><a href="#/processos" data-aba="processos">Processos</a><a href="#/clientes" data-aba="clientes">Clientes</a></nav>
