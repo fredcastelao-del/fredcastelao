@@ -1,0 +1,1180 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>App Processos · Castelão Advocacia</title>
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#6a3020">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Processos">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%231d3557'/%3E%3Cpath d='M9 22l7-12 7 12' stroke='%2363c3a8' stroke-width='3' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+<style>
+  :root {
+    --bg: #f5f6f8; --card: #ffffff; --ink: #1b2330; --quiet: #5d6878; --line: #e2e6ec;
+    --navy: #6a3020; --navy-2: #7e3d2b; --green: #1f8a6b; --green-soft: #e6f4ef;
+    --amber: #b7791f; --amber-soft: #fdf4e3; --red: #c0392b; --mark: #fff1a8;
+    --radius: 10px; --shadow: 0 1px 2px rgba(16,24,40,.05), 0 1px 3px rgba(16,24,40,.06);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #12161d; --card: #1a2029; --ink: #e7ebf1; --quiet: #9aa5b5; --line: #2b3340;
+      --navy: #3b1d14; --navy-2: #4d271b; --green: #4cc39d; --green-soft: #1b3330;
+      --amber: #e2a94a; --amber-soft: #3a2f1c; --red: #ef6b5b; --mark: #6a5a10;
+      --shadow: none;
+    }
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; background: var(--bg); color: var(--ink); font: 15px/1.5 "Segoe UI", system-ui, -apple-system, Roboto, sans-serif; }
+  button, input, select { font: inherit; color: inherit; }
+  a { color: var(--green); }
+  .oculto { display: none !important; }
+
+  /* identidade visual: faixa com o timbre, logo e marca d'agua */
+  .faixa-timbre { height: 121px; text-align: center; line-height: 0; border-bottom: 1px solid var(--line);
+    background: linear-gradient(to bottom, #fff 0, #fff 59px, #683221 59px, #683221 111px, #fff 111px); }
+  .faixa-timbre img { height: 121px; width: auto; max-width: 100%;
+    -webkit-mask-image: linear-gradient(to right, transparent 0, #000 36px, #000 calc(100% - 110px), transparent 100%);
+    mask-image: linear-gradient(to right, transparent 0, #000 36px, #000 calc(100% - 110px), transparent 100%); }
+  @media (max-width: 780px) { .faixa-timbre { height: auto; background: #fff; } .faixa-timbre img { width: 100%; height: auto; -webkit-mask-image: none; mask-image: none; } }
+  .marca .logo-mini { width: 38px; height: 38px; object-fit: contain; filter: invert(1); flex: none; }
+  .entrada .logo-entrada { display: block; width: 110px; height: 110px; object-fit: contain; margin: 0 auto 6px; }
+  body::before { content: ""; position: fixed; inset: 0; z-index: 4; pointer-events: none;
+    background: url(/marca-dagua.png) no-repeat center center / min(62vmin, 560px); opacity: .055; }
+  @media (prefers-color-scheme: dark) { body::before { filter: invert(1); opacity: .06; } .faixa-timbre { border-bottom-color: #000; } }
+  body:has(#telaEntrada:not(.oculto))::before { display: none; }
+  @media print { body::before { opacity: .08; } .faixa-timbre { border: 0; } }
+
+  /* topo */
+  header.topo { background: var(--navy); color: #fff; position: sticky; top: 0; z-index: 5; }
+  .topo-in { max-width: 1180px; margin: 0 auto; padding: 12px 16px; display: flex; gap: 16px; align-items: center; }
+  .marca { display: flex; align-items: center; gap: 10px; white-space: nowrap; font-weight: 600; letter-spacing: .2px; }
+  .marca small { display: block; font-weight: 400; opacity: .7; font-size: 12px; margin-top: -2px; }
+  .busca { flex: 1; display: flex; background: #fff; border-radius: 999px; overflow: hidden; max-width: 640px; }
+  .busca input { flex: 1; border: 0; padding: 10px 18px; outline: none; color: #1b2330; background: #fff; min-width: 0; }
+  .busca button { border: 0; background: var(--green); color: #fff; padding: 0 18px; cursor: pointer; font-weight: 600; }
+  .usuario { margin-left: auto; display: flex; gap: 10px; align-items: center; font-size: 13px; white-space: nowrap; }
+  .usuario button { background: transparent; border: 1px solid rgba(255,255,255,.35); color: #fff; border-radius: 8px; padding: 5px 10px; cursor: pointer; }
+
+  /* layout */
+  main { max-width: 1180px; margin: 0 auto; padding: 20px 16px 48px; display: grid; grid-template-columns: 240px 1fr; gap: 24px; }
+  aside .bloco { background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); padding: 14px; margin-bottom: 14px; box-shadow: var(--shadow); }
+  aside h3 { margin: 0 0 8px; font-size: 12px; text-transform: uppercase; letter-spacing: .6px; color: var(--quiet); }
+  .filtro { display: flex; justify-content: space-between; width: 100%; background: none; border: 0; padding: 6px 8px; border-radius: 6px; cursor: pointer; text-align: left; }
+  .filtro:hover { background: var(--bg); }
+  .filtro.ativo { background: var(--green-soft); color: var(--green); font-weight: 600; }
+  .filtro span:last-child { color: var(--quiet); font-variant-numeric: tabular-nums; }
+  .filtro.ativo span:last-child { color: inherit; }
+  .link-btn { background: none; border: 0; color: var(--green); cursor: pointer; padding: 4px 0; text-align: left; display: block; }
+
+  .cabecalho { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 12px; margin-bottom: 14px; }
+  .cabecalho h1 { margin: 0; font-size: 22px; }
+  .sub { color: var(--quiet); font-size: 13px; }
+  .acoes { display: flex; gap: 8px; flex-wrap: wrap; }
+  .btn { border: 1px solid var(--line); background: var(--card); border-radius: 8px; padding: 7px 12px; cursor: pointer; box-shadow: var(--shadow); }
+  .btn:hover { border-color: var(--quiet); }
+  .btn.primario { background: var(--green); border-color: var(--green); color: #fff; }
+  .btn:disabled { opacity: .6; cursor: default; }
+  .aviso { border-radius: var(--radius); padding: 10px 14px; margin-bottom: 14px; font-size: 14px; }
+  .aviso.info { background: var(--green-soft); color: var(--green); }
+  .aviso.alerta { background: var(--amber-soft); color: var(--amber); }
+
+  /* cards */
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); padding: 16px 18px; margin-bottom: 12px; box-shadow: var(--shadow); position: relative; }
+  .card.nao-lida { border-left: 4px solid var(--green); padding-left: 15px; }
+  .linha1 { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; font-size: 13px; color: var(--quiet); }
+  .chip { display: inline-block; padding: 1px 8px; border-radius: 999px; background: var(--bg); border: 1px solid var(--line); font-size: 12px; color: var(--ink); }
+  .chip.trib { background: var(--navy); color: #fff; border-color: var(--navy); }
+  .chip.novo { background: var(--green); color: #fff; border-color: var(--green); }
+  .numero { font-size: 17px; font-weight: 600; margin: 6px 0 2px; display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+  .numero button { font-size: 12px; border: 1px solid var(--line); background: none; border-radius: 6px; padding: 1px 7px; cursor: pointer; color: var(--quiet); }
+  .orgao { font-size: 14px; color: var(--quiet); }
+  .partes { font-size: 14px; margin-top: 6px; }
+  .texto { margin-top: 10px; font-size: 14px; white-space: pre-wrap; overflow-wrap: anywhere; }
+  .texto.curto { max-height: 7.5em; overflow: hidden; -webkit-mask-image: linear-gradient(#000 60%, transparent); mask-image: linear-gradient(#000 60%, transparent); }
+  mark { background: var(--mark); color: inherit; border-radius: 2px; padding: 0 1px; }
+  .rodape-card { display: flex; gap: 14px; flex-wrap: wrap; margin-top: 10px; font-size: 13px; align-items: center; }
+  .rodape-card button { background: none; border: 0; color: var(--green); cursor: pointer; padding: 0; }
+  .vazio { text-align: center; color: var(--quiet); padding: 48px 16px; background: var(--card); border: 1px dashed var(--line); border-radius: var(--radius); }
+  .paginacao { display: flex; gap: 8px; justify-content: center; align-items: center; margin-top: 16px; color: var(--quiet); font-size: 14px; }
+
+  /* entrada */
+  .entrada { min-height: 100vh; display: grid; place-items: center; padding: 16px; background: var(--navy); }
+  .entrada form { background: var(--card); width: 100%; max-width: 380px; padding: 28px; border-radius: 14px; box-shadow: 0 10px 30px rgba(0,0,0,.25); }
+  .entrada h2 { margin: 0 0 4px; }
+  .entrada p { margin: 0 0 18px; color: var(--quiet); font-size: 14px; }
+  .entrada label { display: block; font-size: 13px; margin: 12px 0 4px; color: var(--quiet); }
+  .entrada input { width: 100%; padding: 10px 12px; border: 1px solid var(--line); border-radius: 8px; background: var(--bg); }
+  .entrada .btn { width: 100%; margin-top: 18px; padding: 10px; }
+  .erro { color: var(--red); font-size: 14px; margin-top: 10px; min-height: 1.2em; }
+
+  /* janela */
+  dialog { border: 0; border-radius: 14px; padding: 0; width: min(560px, calc(100vw - 32px)); background: var(--card); color: var(--ink); }
+  dialog::backdrop { background: rgba(10,15,25,.5); }
+  .dlg-in { padding: 22px; }
+  .dlg-in h2 { margin: 0 0 12px; font-size: 18px; }
+  .dlg-in table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  .dlg-in td, .dlg-in th { text-align: left; padding: 6px 4px; border-bottom: 1px solid var(--line); }
+  .oab-linha { display: flex; gap: 8px; margin-bottom: 8px; }
+  .oab-linha input { padding: 7px 10px; border: 1px solid var(--line); border-radius: 8px; background: var(--bg); }
+  .oab-linha input:first-child { flex: 1; }
+  .oab-linha input:nth-child(2) { width: 64px; text-transform: uppercase; }
+
+
+  /* abas e paginas novas */
+  .abas { display: flex; gap: 4px; }
+  .abas a { color: #fff; opacity: .75; text-decoration: none; padding: 6px 12px; border-radius: 8px; font-size: 14px; white-space: nowrap; }
+  .abas a.ativa { opacity: 1; background: rgba(255,255,255,.14); font-weight: 600; }
+  .pagina { max-width: 980px; margin: 0 auto; padding: 20px 16px 48px; }
+  .voltar { display: inline-block; margin-bottom: 12px; font-size: 14px; text-decoration: none; }
+  .perfil { display: flex; gap: 16px; align-items: center; background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); padding: 20px; box-shadow: var(--shadow); margin-bottom: 14px; }
+  .avatar { width: 64px; height: 64px; border-radius: 50%; background: var(--navy); color: #fff; display: grid; place-items: center; font-size: 22px; font-weight: 600; flex: none; }
+  .perfil h1 { margin: 0; font-size: 22px; line-height: 1.25; }
+  .numeros { display: flex; gap: 22px; margin-top: 6px; flex-wrap: wrap; }
+  .numeros b { font-size: 20px; display: block; line-height: 1.1; }
+  .numeros span { color: var(--quiet); font-size: 13px; }
+  .barra-filtros { display: flex; gap: 8px; flex-wrap: wrap; margin: 4px 0 14px; align-items: center; }
+  .pilula { border: 1px solid var(--line); background: var(--card); border-radius: 999px; padding: 4px 12px; cursor: pointer; font-size: 13px; }
+  .pilula.ativa { background: var(--navy); color: #fff; border-color: var(--navy); }
+  a.pilula { color: var(--ink); }
+  a.pilula.ativa { color: #fff; }
+  .pilula small { opacity: .7; margin-left: 4px; }
+  .rotulo { font-size: 12px; color: var(--quiet); text-transform: uppercase; letter-spacing: .5px; margin-right: 2px; }
+  .proc-card { background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); padding: 16px 18px; margin-bottom: 12px; box-shadow: var(--shadow); }
+  .proc-card h3 { margin: 0 0 4px; font-size: 16px; line-height: 1.35; }
+  .proc-card h3 a { color: var(--ink); text-decoration: none; }
+  .proc-card h3 a:hover { color: var(--green); }
+  .proc-meta { font-size: 13px; color: var(--quiet); display: flex; flex-wrap: wrap; gap: 6px 14px; margin-top: 4px; }
+  .polo { display: inline-block; font-size: 11px; padding: 0 6px; border-radius: 4px; margin-left: 4px; vertical-align: 1px; }
+  .polo.A { background: var(--green-soft); color: var(--green); }
+  .polo.P { background: var(--amber-soft); color: var(--amber); }
+  .proc-acoes { display: flex; gap: 8px; margin-top: 12px; flex-wrap: wrap; }
+  .grade { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px 20px; margin-top: 14px; }
+  .grade div span { display: block; font-size: 12px; color: var(--quiet); text-transform: uppercase; letter-spacing: .4px; }
+  .linha-tempo { position: relative; margin-left: 8px; padding-left: 22px; border-left: 2px solid var(--line); }
+  .evento { position: relative; padding: 0 0 16px; }
+  .evento::before { content: ''; position: absolute; left: -29px; top: 5px; width: 12px; height: 12px; border-radius: 50%; background: var(--card); border: 2px solid var(--quiet); }
+  .evento.pub::before { border-color: var(--green); background: var(--green); }
+  .evento .quando { font-size: 13px; color: var(--quiet); }
+  .evento .oque { font-weight: 600; }
+  .evento .texto { margin-top: 6px; background: var(--bg); border-radius: 8px; padding: 10px 12px; }
+  .campos { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 10px; margin-top: 12px; }
+  .campos input { width: 100%; padding: 7px 10px; border: 1px solid var(--line); border-radius: 8px; background: var(--bg); }
+  .campos label { font-size: 12px; color: var(--quiet); }
+  .secao-t { font-size: 15px; margin: 22px 0 10px; }
+  .girando { display: inline-block; width: 12px; height: 12px; border: 2px solid currentColor; border-right-color: transparent; border-radius: 50%; animation: gira .8s linear infinite; vertical-align: -1px; margin-right: 6px; }
+  @keyframes gira { to { transform: rotate(360deg); } }
+
+  /* versao 3 */
+  .chip.area { background: var(--green-soft); color: var(--green); border-color: transparent; }
+  .chip.etq { background: var(--bg); }
+  .tabela { width: 100%; border-collapse: collapse; background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); overflow: hidden; box-shadow: var(--shadow); font-size: 14px; }
+  .tabela th, .tabela td { text-align: left; padding: 10px 12px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  .tabela th { font-size: 12px; text-transform: uppercase; letter-spacing: .4px; color: var(--quiet); font-weight: 600; }
+  .tabela tr:last-child td { border-bottom: 0; }
+  .tabela a { color: var(--ink); font-weight: 600; text-decoration: none; }
+  .tabela a:hover { color: var(--green); }
+  .campos select, .campos textarea { width: 100%; padding: 7px 10px; border: 1px solid var(--line); border-radius: 8px; background: var(--bg); font: inherit; color: inherit; }
+  .campos .largo { grid-column: 1 / -1; }
+  .parte-link { color: inherit; text-decoration: none; border-bottom: 1px dotted var(--quiet); }
+  .parte-link:hover { color: var(--green); border-color: var(--green); }
+  .rotulo-local { font-size: 11px; padding: 0 6px; border-radius: 4px; background: var(--bg); border: 1px solid var(--line); color: var(--quiet); margin-left: 6px; vertical-align: 2px; }
+
+  @media (max-width: 820px) {
+    .abas { order: 2; }
+    main { grid-template-columns: 1fr; }
+    .topo-in { flex-wrap: wrap; }
+    .busca { order: 3; flex-basis: 100%; max-width: none; }
+    .marca small { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<!-- entrada -->
+<section id="telaEntrada" class="entrada oculto">
+  <form id="formEntrada" autocomplete="on">
+    <img class="logo-entrada" src="/marca-dagua.png" alt="Castelão Advocacia">
+    <h2 id="entradaTitulo">Entrar</h2>
+    <p id="entradaTexto">App Processos · Castelão Advocacia</p>
+    <div id="campoNome" class="oculto">
+      <label for="nome">Seu nome</label>
+      <input id="nome" name="nome" autocomplete="name">
+    </div>
+    <label for="email">E-mail</label>
+    <input id="email" name="email" type="email" required autocomplete="username">
+    <label for="senha">Senha</label>
+    <input id="senha" name="senha" type="password" required minlength="8" autocomplete="current-password">
+    <button class="btn primario" type="submit" id="entradaBotao">Entrar</button>
+    <div class="erro" id="entradaErro"></div>
+  </form>
+</section>
+
+<!-- app -->
+<div id="telaApp" class="oculto">
+  <div class="faixa-timbre"><img src="/logo-timbre.jpg" alt="Dr. Frederico Castelão dos Santos, OAB 451.038"></div>
+  <header class="topo">
+    <div class="topo-in">
+      <div class="marca">
+        <img class="logo-mini" src="/marca-dagua.png" alt="">
+        <div>App Processos<small>Castelão Advocacia</small></div>
+      </div>
+      <nav class="abas"><a href="#/" data-aba="intimacoes">Intimações</a><a href="#/processos" data-aba="processos">Processos</a><a href="#/clientes" data-aba="clientes">Clientes</a></nav>
+      <form class="busca" id="formBusca" role="search">
+        <input id="q" type="search" placeholder="Nome da pessoa, CPF, número do processo ou palavra" aria-label="Buscar">
+        <button type="submit">Buscar</button>
+      </form>
+      <div class="usuario"><span id="nomeUsuario"></span><button id="btnSair" type="button">Sair</button></div>
+    </div>
+  </header>
+
+  <main id="viewIntimacoes">
+    <aside>
+      <div class="bloco">
+        <h3>Leitura</h3>
+        <button class="filtro" data-lida="0"><span>Não lidas</span><span id="cNaoLidas">0</span></button>
+        <button class="filtro" data-lida=""><span>Todas</span><span id="cTodas">0</span></button>
+      </div>
+      <div class="bloco">
+        <h3>Tribunal</h3>
+        <div id="listaTribunais"></div>
+      </div>
+      <div class="bloco">
+        <h3>App</h3>
+        <button class="link-btn" id="btnHistorico" type="button">Histórico de atualizações</button>
+        <button class="link-btn" id="btnConfig" type="button">OABs e configurações</button>
+        <button class="link-btn" id="btnBackups" type="button">Backups</button>
+        <button class="link-btn" id="btnRegistro" type="button">Registro de consultas</button>
+      </div>
+    </aside>
+
+    <section>
+      <div class="cabecalho">
+        <div>
+          <h1 id="titulo">Intimações</h1>
+          <div class="sub" id="subtitulo"></div>
+        </div>
+        <div class="acoes">
+          <button class="btn" id="btnLerPagina" type="button">Marcar página como lida</button>
+          <button class="btn primario" id="btnAtualizar" type="button">Atualizar agora</button>
+        </div>
+      </div>
+      <div id="avisos"></div>
+      <div id="lista"></div>
+      <div class="paginacao" id="paginacao"></div>
+    </section>
+  </main>
+  <div id="viewOutra" class="pagina oculto"></div>
+</div>
+
+<dialog id="dlgHistorico"><div class="dlg-in">
+  <h2>Histórico de atualizações</h2>
+  <div id="historico"></div>
+  <div style="text-align:right;margin-top:14px"><button class="btn" onclick="this.closest('dialog').close()">Fechar</button></div>
+</div></dialog>
+
+<dialog id="dlgBackups"><div class="dlg-in">
+  <h2>Cópia de segurança</h2>
+  <p class="sub">Seus dados ficam guardados na nuvem (Supabase), acessíveis de qualquer aparelho. Para ter uma cópia sua, em arquivo, clique em <b>Baixar cópia dos dados</b>: o arquivo traz clientes, processos, publicações e andamentos.</p>
+  <div id="listaBackups"></div>
+  
+  <div class="erro" id="backupErro"></div>
+  <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:8px">
+    <button class="btn" onclick="this.closest('dialog').close()">Fechar</button>
+    <button class="btn primario" id="btnFazerBackup">Baixar cópia dos dados</button>
+  </div>
+</div></dialog>
+
+<dialog id="dlgRegistro"><div class="dlg-in" style="max-height:80vh;overflow:auto">
+  <h2>Registro de consultas</h2>
+  <p class="sub">Quem fez o quê no app, para controle interno e para responder pedidos com base na LGPD. Mostra as 300 ações mais recentes.</p>
+  <div id="listaRegistro"></div>
+  <div style="text-align:right;margin-top:14px"><button class="btn" onclick="this.closest('dialog').close()">Fechar</button></div>
+</div></dialog>
+
+<dialog id="dlgConfig"><div class="dlg-in">
+  <h2>OABs e configurações</h2>
+  <p class="sub">O app busca no DJEN, todo dia, as intimações destas inscrições.</p>
+  <div id="listaOabs"></div>
+  <button class="link-btn" id="btnAddOab" type="button">+ Adicionar OAB</button>
+  <label class="sub" style="display:block;margin-top:14px">Coletar todo dia a partir das
+    <input id="horaColeta" type="number" min="0" max="23" style="width:64px;padding:5px 8px;border:1px solid var(--line);border-radius:8px;background:var(--bg)"> h
+  </label>
+  <label class="sub" style="display:block;margin-top:14px">Chave pública do DataJud (troque só se o CNJ mudar)
+    <input id="chaveDataJud" placeholder="deixe em branco para manter a atual" style="width:100%;margin-top:4px;padding:7px 10px;border:1px solid var(--line);border-radius:8px;background:var(--bg)">
+  </label>
+  <div class="erro" id="configErro"></div>
+  <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:8px">
+    <button class="btn" onclick="this.closest('dialog').close()">Cancelar</button>
+    <button class="btn primario" id="btnSalvarConfig">Salvar</button>
+  </div>
+</div></dialog>
+
+<script>
+'use strict';
+const $ = s => document.querySelector(s);
+const estado = { q: '', lida: '0', tribunal: '', pagina: 1, dados: null, info: null, poll: null };
+
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const normChar = c => c.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().charAt(0) || c;
+function realcar(texto, termos) {
+  texto = String(texto || '');
+  if (!termos.length) return esc(texto);
+  const norm = Array.from(texto, normChar).join('');
+  const marcas = new Array(texto.length).fill(false);
+  for (const t of termos) {
+    let i = 0;
+    while ((i = norm.indexOf(t, i)) !== -1) { for (let k = i; k < i + t.length; k++) marcas[k] = true; i += t.length; }
+  }
+  let out = '', dentro = false;
+  for (let i = 0; i < texto.length; i++) {
+    if (marcas[i] && !dentro) { out += '<mark>'; dentro = true; }
+    if (!marcas[i] && dentro) { out += '</mark>'; dentro = false; }
+    out += esc(texto[i]);
+  }
+  return out + (dentro ? '</mark>' : '');
+}
+const dataBR = iso => iso ? iso.slice(0, 10).split('-').reverse().join('/') : '';
+const dataHoraBR = s => { if (!s) return ''; const [d, h] = s.split(' '); return `${dataBR(d)} às ${(h || '').slice(0, 5)}`; };
+
+// ------------------------------------------------ nuvem (Supabase): login, API e busca no DJEN pelo navegador
+const NUVEM = { url: 'https://wutlzvggjtkatrjqpeam.supabase.co', chave: 'sb_publishable_0yfTsxtSKmRB3F4i9MvSvQ_jQM4o33Z' };
+const API_BASE = NUVEM.url + '/functions/v1/app';
+const DJEN_URL = 'https://comunicaapi.pje.jus.br/api/v1/comunicacao';
+const NAV = { coletando: false, auto: false, importacao: null };
+const pausaMs = ms => new Promise(r => setTimeout(r, ms));
+const somaDiasISO = (iso, n) => { const d = new Date(iso + 'T00:00:00Z'); d.setUTCDate(d.getUTCDate() + n); return d.toISOString().slice(0, 10); };
+const nomeNorm = t => String(t || '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().replace(/\s+/g, ' ').trim();
+const mascaraDe = d => d.length === 20 ? `${d.slice(0, 7)}-${d.slice(7, 9)}.${d.slice(9, 13)}.${d.slice(13, 14)}.${d.slice(14, 16)}.${d.slice(16)}` : d;
+
+let sessao = null;
+try { sessao = JSON.parse(localStorage.getItem('appprocessos_sessao') || 'null'); } catch { sessao = null; }
+function gravarSessao(s) {
+  sessao = s;
+  try { s ? localStorage.setItem('appprocessos_sessao', JSON.stringify(s)) : localStorage.removeItem('appprocessos_sessao'); } catch {}
+}
+async function authPost(caminho, corpo) {
+  const r = await fetch(`${NUVEM.url}/auth/v1/${caminho}`, { method: 'POST', headers: { apikey: NUVEM.chave, 'content-type': 'application/json' }, body: JSON.stringify(corpo) });
+  return { ok: r.ok, status: r.status, corpo: await r.json().catch(() => ({})) };
+}
+function guardarTokens(j) { gravarSessao({ access_token: j.access_token, refresh_token: j.refresh_token, expira: Date.now() + Math.max(60, (j.expires_in || 3600) - 60) * 1000 }); }
+async function entrarNuvem(email, senha) {
+  const r = await authPost('token?grant_type=password', { email: String(email || '').trim(), password: String(senha || '') });
+  if (!r.ok) throw new Error(/invalid login/i.test(r.corpo.error_description || r.corpo.msg || '') ? 'E-mail ou senha incorretos.' : (r.corpo.error_description || r.corpo.msg || 'Não consegui entrar. Tente de novo.'));
+  guardarTokens(r.corpo);
+}
+let renovando = null;
+async function tokenValido() {
+  if (!sessao) return null;
+  if (Date.now() < sessao.expira) return sessao.access_token;
+  if (!renovando) renovando = authPost('token?grant_type=refresh_token', { refresh_token: sessao.refresh_token })
+    .then(r => { if (r.ok) guardarTokens(r.corpo); else if (r.status >= 400 && r.status < 500) gravarSessao(null); })
+    .catch(() => {}).finally(() => { renovando = null; });
+  await renovando;
+  return sessao && Date.now() < sessao.expira ? sessao.access_token : null;
+}
+async function chamarNuvem(caminho, opcoes = {}, { silencioso = false } = {}) {
+  const token = await tokenValido();
+  if (!token) { if (!silencioso) await iniciar(); throw new Error('Sessão encerrada. Entre de novo.'); }
+  const r = await fetch(API_BASE + caminho, { ...opcoes, headers: { 'content-type': 'application/json', ...(opcoes.headers || {}), authorization: 'Bearer ' + token } });
+  const corpo = await r.json().catch(() => ({}));
+  if (r.status === 401) { gravarSessao(null); if (!silencioso) await iniciar(); throw new Error(corpo.erro || 'Sessão encerrada.'); }
+  if (!r.ok) throw new Error(corpo.erro || `Erro ${r.status}`);
+  return corpo;
+}
+async function estadoNuvem() {
+  if (!(await tokenValido())) return { temUsuario: true, usuario: null };
+  let info;
+  try { info = await chamarNuvem('/api/estado', {}, { silencioso: true }); }
+  catch (e) { if (!sessao) return { temUsuario: true, usuario: null }; throw e; }
+  if (NAV.coletando) info.coletando = true;
+  return info;
+}
+
+// DJEN: o servidor do DJEN recusa acessos de fora do Brasil, entao quem busca e este navegador; o resultado vai para a nuvem
+async function djenGet(params, tentativas = 3) {
+  const u = new URL(DJEN_URL); u.search = new URLSearchParams(params).toString();
+  let ultimo;
+  for (let t = 1; t <= tentativas; t++) {
+    try {
+      const r = await fetch(u, { headers: { accept: 'application/json' }, signal: AbortSignal.timeout(60000) });
+      if (r.ok) return await r.json();
+      const e = new Error(`DJEN respondeu ${r.status}${r.status === 429 ? ' (sobrecarregado)' : r.status === 504 ? ' (tempo esgotado)' : ''}`);
+      if (r.status === 400 || r.status === 401 || r.status === 404) { e.definitivo = true; throw e; }
+      ultimo = e;
+    } catch (e) {
+      if (e.definitivo) throw e;
+      ultimo = e.name === 'TimeoutError' ? new Error('DJEN não respondeu a tempo') : (e instanceof TypeError ? new Error('Não consegui falar com o DJEN. Confira a internet e tente de novo.') : e);
+    }
+    if (t < tentativas) await pausaMs(5000 * t);
+  }
+  throw ultimo;
+}
+async function djenPaginar(params, oab, minha) {
+  let pagina = 1, novos = 0, total = 0;
+  for (;;) {
+    const dados = await djenGet({ ...params, itensPorPagina: '100', pagina: String(pagina) });
+    const itens = dados.items || [];
+    total = Number(dados.count ?? total);
+    if (itens.length) novos += (await chamarNuvem('/api/djen/itens', { method: 'POST', body: JSON.stringify({ itens, oab, minha }) })).novos || 0;
+    if (itens.length < 100 || pagina >= 50) break;
+    pagina++; await pausaMs(1000);
+  }
+  return { novos, total };
+}
+async function djenPorNumeroNav(cnj) {
+  try {
+    const r = await djenPaginar({ numeroProcesso: cnj }, null, false);
+    await chamarNuvem('/api/djen/marcar', { method: 'POST', body: JSON.stringify({ cnj }) });
+    return r;
+  } catch (e) {
+    await chamarNuvem('/api/djen/marcar', { method: 'POST', body: JSON.stringify({ cnj, erro: String(e.message || e) }) }).catch(() => {});
+    throw e;
+  }
+}
+async function coletaNavegador(plano) {
+  NAV.coletando = true;
+  try {
+    for (const o of plano.oabs) {
+      let novos = 0, total = 0;
+      try {
+        for (let a = o.inicio; a <= o.fim;) {
+          const b = somaDiasISO(a, o.janelaDias - 1), fimJanela = b > o.fim ? o.fim : b;
+          const r = await djenPaginar({ numeroOab: o.numero, ufOab: o.uf, dataDisponibilizacaoInicio: a, dataDisponibilizacaoFim: fimJanela }, o.oab, true);
+          novos += r.novos; total += r.total;
+          a = somaDiasISO(fimJanela, 1);
+        }
+        await chamarNuvem('/api/coleta/fim', { method: 'POST', body: JSON.stringify({ id: o.coletaId, ok: true, novos, total }) });
+      } catch (e) {
+        await chamarNuvem('/api/coleta/fim', { method: 'POST', body: JSON.stringify({ id: o.coletaId, ok: false, erro: String(e.message || e), novos }) }).catch(() => {});
+      }
+    }
+    if (plano.acompanhados.length) {
+      let novos = 0; const falhas = [];
+      for (const cnj of plano.acompanhados) {
+        try { novos += (await djenPorNumeroNav(cnj)).novos; } catch { falhas.push(mascaraDe(cnj)); }
+        await pausaMs(1000);
+      }
+      await chamarNuvem('/api/coleta/acompanhados', { method: 'POST', body: JSON.stringify({ total: plano.acompanhados.length, novos, falhas }) }).catch(() => {});
+    }
+  } finally { NAV.coletando = false; }
+}
+async function importarNavegador(lista) {
+  NAV.importacao = { total: lista.length, feitos: 0, erros: 0, comecou: Date.now(), terminou: null };
+  for (const cnj of lista) {
+    try { await djenPorNumeroNav(cnj); } catch { NAV.importacao.erros++; }
+    NAV.importacao.feitos++;
+    await pausaMs(300);
+  }
+  NAV.importacao.terminou = Date.now();
+  chamarNuvem('/api/importar-lista/fim', { method: 'POST', body: JSON.stringify({ total: lista.length }) }).catch(() => {});
+}
+async function buscaNomeNavegador(nome) {
+  if (nomeNorm(nome).replace(/[^a-z ]/g, '').trim().length < 5) throw new Error('Digite o nome com pelo menos 5 letras. Quanto mais completo, melhor.');
+  const alvo = nomeNorm(nome);
+  const confere = n => { const x = nomeNorm(n); return x === alvo || (' ' + x + ' ').includes(' ' + alvo + ' '); };
+  const itens = []; let total = 0, lidas = 0;
+  try {
+    for (let pagina = 1; pagina <= 5; pagina++) {
+      const dados = await djenGet({ nomeParte: nome, itensPorPagina: '100', pagina: String(pagina) });
+      const lote = dados.items || [];
+      total = Number(dados.count ?? 0); lidas += lote.length;
+      for (const it of lote) if ((it.destinatarios || []).some(d => confere(d.nome))) itens.push(it);
+      if (lote.length < 100) break;
+      await pausaMs(800);
+    }
+  } catch (e) { throw new Error('O DJEN não respondeu: ' + (e.message || e)); }
+  return await chamarNuvem('/api/busca/nome', { method: 'POST', body: JSON.stringify({ nome, itens, totalDjen: total, lidas }) });
+}
+async function dispararColetaAuto() {
+  const i = estado.info;
+  if (!i?.coletaDevida || NAV.coletando || NAV.auto) return;
+  NAV.auto = true;
+  try { const r = await chamarNuvem('/api/coleta', { method: 'POST', body: '{}' }, { silencioso: true }); coletaNavegador(r.plano); } catch {}
+  setTimeout(() => { NAV.auto = false; }, 60000);
+}
+
+async function api(caminho, opcoes = {}) {
+  const metodo = (opcoes.method || 'GET').toUpperCase();
+  const [rota, consulta] = caminho.split('?');
+  if (rota === '/api/login') { await entrarNuvem(JSON.parse(opcoes.body || '{}').email, JSON.parse(opcoes.body || '{}').senha); return { ok: true }; }
+  if (rota === '/api/cadastro') throw new Error('O acesso já foi criado. Entre com seu e-mail e senha.');
+  if (rota === '/api/sair') { gravarSessao(null); return { ok: true }; }
+  if (rota === '/api/coleta' && metodo === 'POST') {
+    const r = await chamarNuvem('/api/coleta', opcoes);
+    coletaNavegador(r.plano);
+    return { ok: true };
+  }
+  let m;
+  if ((m = rota.match(/^\/api\/processos\/(\d{20})\/consultar$/)) && metodo === 'POST') {
+    await chamarNuvem(caminho, opcoes);
+    let erroDjen = null;
+    try { await djenPorNumeroNav(m[1]); } catch (e) { erroDjen = String(e.message || e); }
+    return { ok: true, erroDjen };
+  }
+  if (rota === '/api/importar-lista') {
+    if (metodo === 'GET') return { importacao: NAV.importacao };
+    if (NAV.importacao && !NAV.importacao.terminou) throw new Error('Já existe uma importação em andamento. Aguarde terminar.');
+    const r = await chamarNuvem(caminho, opcoes);
+    importarNavegador(r.lista || []);
+    const { lista, ...resto } = r;
+    return resto;
+  }
+  if (rota === '/api/busca/nome' && metodo === 'GET') return await buscaNomeNavegador(new URLSearchParams(consulta || '').get('nome') || '');
+  return await chamarNuvem(caminho, opcoes);
+}
+
+// ------------------------------------------------ entrada
+let modoCadastro = false;
+function mostrarEntrada(cadastro) {
+  modoCadastro = cadastro;
+  $('#telaApp').classList.add('oculto');
+  $('#telaEntrada').classList.remove('oculto');
+  $('#campoNome').classList.toggle('oculto', !cadastro);
+  $('#entradaTitulo').textContent = cadastro ? 'Criar seu acesso' : 'Entrar';
+  $('#entradaTexto').textContent = cadastro ? 'Primeiro uso: crie o acesso de administrador. Depois disso, o app já busca suas intimações.' : 'App Processos · Castelão Advocacia';
+  $('#entradaBotao').textContent = cadastro ? 'Criar acesso e começar' : 'Entrar';
+  $('#senha').autocomplete = cadastro ? 'new-password' : 'current-password';
+  (cadastro ? $('#nome') : $('#email')).focus();
+}
+$('#formEntrada').addEventListener('submit', async e => {
+  e.preventDefault();
+  $('#entradaErro').textContent = '';
+  const corpo = { email: $('#email').value, senha: $('#senha').value };
+  if (modoCadastro) corpo.nome = $('#nome').value;
+  try {
+    await api(modoCadastro ? '/api/cadastro' : '/api/login', { method: 'POST', body: JSON.stringify(corpo) });
+    $('#senha').value = '';
+    await iniciar();
+  } catch (err) { $('#entradaErro').textContent = err.message; }
+});
+$('#btnSair').addEventListener('click', async () => { await api('/api/sair', { method: 'POST', body: '{}' }); iniciar(); });
+
+// ------------------------------------------------ app
+async function iniciar() {
+  let info;
+  try { info = await estadoNuvem(); }
+  catch (e) { mostrarEntrada(false); $('#entradaErro').textContent = 'Não consegui falar com o servidor. Confira a internet e tente de novo.'; return; }
+  estado.info = info;
+  if (!info.usuario) return mostrarEntrada(!info.temUsuario);
+  $('#telaEntrada').classList.add('oculto');
+  $('#telaApp').classList.remove('oculto');
+  $('#nomeUsuario').textContent = info.usuario.nome;
+  desenharStatus();
+  acompanharColeta();
+  await rotear();
+}
+
+function desenharStatus() {
+  const info = estado.info, u = info.ultimaColeta;
+  const oabs = (info.config?.oabs || []).map(o => `OAB ${o.numero.replace(/(\d)(?=(\d{3})+$)/g, '$1.')}/${o.uf}`).join(', ');
+  let s = oabs;
+  if (info.coletando) s += ' · atualizando agora...';
+  else if (u) s += ` · última atualização ${dataHoraBR(u.terminada_em || u.iniciada_em)}` + (u.status === 'ok' ? ` (${u.novos} nova${u.novos === 1 ? '' : 's'})` : '');
+  $('#subtitulo').textContent = s;
+  $('#btnAtualizar').disabled = info.coletando;
+  $('#btnAtualizar').textContent = info.coletando ? 'Atualizando...' : 'Atualizar agora';
+  const av = [];
+  if (info.coletando && !estado.dados?.contagens?.todas) av.push(`<div class="aviso info">Buscando suas intimações no DJEN. Na primeira vez, o app carrega os últimos 90 dias e isso leva alguns segundos.</div>`);
+  if (!info.coletando && u && u.status === 'erro') av.push(`<div class="aviso alerta">A última atualização falhou: ${esc(u.erro)}. O app tenta de novo sozinho em até 1 hora, ou clique em "Atualizar agora".</div>`);
+  $('#avisos').innerHTML = av.join('');
+}
+
+function acompanharColeta() {
+  clearTimeout(estado.poll);
+  const ciclo = async () => {
+    const assinatura = i => `${i.coletando}|${i.ultimaColeta?.id}|${i.ultimaColeta?.status}`;
+    const antes = assinatura(estado.info);
+    try { estado.info = await estadoNuvem(); } catch { estado.poll = setTimeout(ciclo, 15000); return; }
+    if (!estado.info.usuario) return;
+    desenharStatus();
+    if (antes !== assinatura(estado.info) && !estado.info.coletando) carregar();
+    dispararColetaAuto();
+    estado.poll = setTimeout(ciclo, (estado.info.coletando || estado.info.filaDataJud > 0) ? 4000 : 30000);
+  };
+  estado.poll = setTimeout(ciclo, 1500);
+}
+
+async function carregar() {
+  const p = new URLSearchParams({ q: estado.q, lida: estado.lida, tribunal: estado.tribunal, pagina: estado.pagina });
+  const d = await api('/api/comunicacoes?' + p);
+  estado.dados = d;
+  desenhar();
+}
+
+function desenhar() {
+  const d = estado.dados;
+  const termos = d.tipoBusca === 'texto' ? estado.q.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().split(/\s+/).filter(t => t.length > 1) : [];
+
+  document.querySelectorAll('.filtro[data-lida]').forEach(b => b.classList.toggle('ativo', b.dataset.lida === estado.lida));
+  $('#cNaoLidas').textContent = d.contagens.naoLidas;
+  $('#cTodas').textContent = d.contagens.todas;
+  const trib = [`<button class="filtro ${estado.tribunal ? '' : 'ativo'}" data-trib=""><span>Todos</span><span></span></button>`]
+    .concat(d.contagens.tribunais.map(t => `<button class="filtro ${estado.tribunal === t.tribunal ? 'ativo' : ''}" data-trib="${esc(t.tribunal || '')}"><span>${esc(t.tribunal || 'Sem tribunal')}</span><span>${t.n}</span></button>`));
+  $('#listaTribunais').innerHTML = trib.join('');
+
+  $('#titulo').textContent = estado.q ? `Busca: ${estado.q}` : (estado.lida === '0' ? 'Intimações não lidas' : 'Todas as intimações');
+  $('#btnLerPagina').classList.toggle('oculto', !d.itens.some(i => !i.lida));
+
+  if (!d.itens.length) {
+    const msg = estado.q ? 'Nada encontrado para essa busca.' :
+      estado.lida === '0' ? (d.contagens.todas ? 'Tudo lido. Nenhuma intimação pendente.' : 'Ainda não há intimações. Elas aparecem aqui depois da primeira atualização.') : 'Nenhuma intimação.';
+    $('#lista').innerHTML = `<div class="vazio">${esc(msg)}</div>`;
+  } else {
+    $('#lista').innerHTML = d.itens.map(i => {
+      const partes = i.destinatarios.map(x => `${realcar(x.nome, termos)}${x.polo ? ` <span class="sub">(${x.polo === 'A' ? 'ativo' : x.polo === 'P' ? 'passivo' : esc(x.polo)})</span>` : ''}`).join(' · ');
+      const longo = (i.texto_limpo || '').length > 420;
+      return `<article class="card ${i.lida ? '' : 'nao-lida'}" data-id="${i.id}">
+        <div class="linha1">
+          ${i.lida ? '' : '<span class="chip novo">nova</span>'}
+          <span class="chip trib">${esc(i.tribunal)}</span>
+          <span>${dataBR(i.data_disponibilizacao)}</span>
+          <span>·</span><span>${esc(i.tipo_comunicacao || '')}${i.tipo_documento && i.tipo_documento !== i.tipo_comunicacao ? ' · ' + esc(i.tipo_documento) : ''}</span>
+        </div>
+        <div class="numero">${realcar(i.numero_mascara, termos)} <button data-copiar="${esc(i.numero_mascara)}" title="Copiar número">copiar</button></div>
+        <div class="orgao">${realcar(i.orgao, termos)}${i.classe ? ' · ' + realcar(i.classe, termos) : ''}</div>
+        ${partes ? `<div class="partes">${partes}</div>` : ''}
+        <div class="texto ${longo ? 'curto' : ''}">${realcar(i.texto_limpo, termos)}</div>
+        <div class="rodape-card">
+          ${longo ? '<button data-expandir>Ler tudo</button>' : ''}
+          ${i.link ? `<a href="${esc(i.link)}" target="_blank" rel="noopener noreferrer">Abrir no tribunal</a>` : ''}
+          <button data-buscar="${esc(i.numero_mascara)}">Ver processo e andamento</button>
+          <button data-lida="${i.lida ? 0 : 1}">${i.lida ? 'Marcar como não lida' : 'Marcar como lida'}</button>
+        </div>
+      </article>`;
+    }).join('');
+  }
+
+  $('#paginacao').innerHTML = d.paginas > 1 ?
+    `<button class="btn" data-pag="${d.pagina - 1}" ${d.pagina <= 1 ? 'disabled' : ''}>Anterior</button>
+     <span>Página ${d.pagina} de ${d.paginas} · ${d.total} intimações</span>
+     <button class="btn" data-pag="${d.pagina + 1}" ${d.pagina >= d.paginas ? 'disabled' : ''}>Próxima</button>` :
+    (d.total ? `<span>${d.total} intimaç${d.total === 1 ? 'ão' : 'ões'}</span>` : '');
+}
+
+// ------------------------------------------------ eventos
+$('#formBusca').addEventListener('submit', e => {
+  e.preventDefault();
+  const q = $('#q').value.trim();
+  if (!q) return;
+  const dig = q.replace(/\D/g, '');
+  if (dig.length === 20 && /^[\d.\-\s]+$/.test(q)) location.hash = '#/processo/' + dig;
+  else if ((dig.length === 11 || dig.length === 14) && /^[\d.\-\/\s]+$/.test(q)) location.hash = '#/documento/' + dig;
+  else location.hash = '#/pessoa/' + encodeURIComponent(q);
+});
+$('#q').addEventListener('search', () => { if (!$('#q').value && estado.q) { estado.q = ''; estado.pagina = 1; carregar(); } });
+document.querySelector('aside').addEventListener('click', e => {
+  const b = e.target.closest('.filtro');
+  if (!b) return;
+  if ('lida' in b.dataset) estado.lida = b.dataset.lida;
+  if ('trib' in b.dataset) estado.tribunal = b.dataset.trib;
+  estado.pagina = 1;
+  carregar();
+});
+$('#lista').addEventListener('click', async e => {
+  const card = e.target.closest('.card');
+  const t = e.target;
+  if (t.matches('[data-copiar]')) { navigator.clipboard?.writeText(t.dataset.copiar); t.textContent = 'copiado'; setTimeout(() => t.textContent = 'copiar', 1500); }
+  else if (t.matches('[data-expandir]')) { const tx = card.querySelector('.texto'); tx.classList.toggle('curto'); t.textContent = tx.classList.contains('curto') ? 'Ler tudo' : 'Recolher'; }
+  else if (t.matches('[data-buscar]')) { location.hash = '#/processo/' + t.dataset.buscar.replace(/\D/g, ''); }
+  else if (t.matches('[data-lida]')) { await api('/api/comunicacoes/' + card.dataset.id, { method: 'PATCH', body: JSON.stringify({ lida: t.dataset.lida === '1' }) }); carregar(); }
+});
+$('#paginacao').addEventListener('click', e => { const b = e.target.closest('[data-pag]'); if (b && !b.disabled) { estado.pagina = Number(b.dataset.pag); carregar(); window.scrollTo(0, 0); } });
+$('#btnLerPagina').addEventListener('click', async () => {
+  const ids = estado.dados.itens.filter(i => !i.lida).map(i => i.id);
+  await api('/api/comunicacoes/marcar-todas', { method: 'POST', body: JSON.stringify({ ids }) });
+  carregar();
+});
+$('#btnAtualizar').addEventListener('click', async () => {
+  try { await api('/api/coleta', { method: 'POST', body: '{}' }); } catch (err) { alert(err.message); }
+  estado.info.coletando = true; desenharStatus();
+});
+$('#btnHistorico').addEventListener('click', async () => {
+  const h = await api('/api/coletas');
+  $('#historico').innerHTML = h.length ? `<table><tr><th>Quando</th><th>OAB</th><th>Período</th><th>Resultado</th></tr>${h.map(c =>
+    `<tr><td>${dataHoraBR(c.iniciada_em)}</td><td>${esc(c.oab)}</td><td>${dataBR(c.inicio)} a ${dataBR(c.fim)}</td><td>${c.status === 'ok' ? `${c.novos} nova${c.novos === 1 ? '' : 's'}` : c.status === 'erro' ? `<span style="color:var(--red)">erro: ${esc(c.erro)}</span>` : 'em andamento'}</td></tr>`).join('')}</table>` : '<p class="sub">Nenhuma atualização ainda.</p>';
+  $('#dlgHistorico').showModal();
+});
+
+const tamanhoBR = b => b >= 1048576 ? (b / 1048576).toFixed(1).replace('.', ',') + ' MB' : Math.max(1, Math.round(b / 1024)) + ' KB';
+async function desenharBackups() { $('#listaBackups').innerHTML = ''; }
+$('#btnBackups').addEventListener('click', async () => { $('#backupErro').textContent = ''; await desenharBackups(); $('#dlgBackups').showModal(); });
+$('#btnFazerBackup').addEventListener('click', async () => {
+  $('#btnFazerBackup').disabled = true;
+  try {
+    const dados = await api('/api/exportar');
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(new Blob([JSON.stringify(dados)], { type: 'application/json' }));
+    a.download = `app-processos-copia-${new Date().toISOString().slice(0, 10)}.json`;
+    document.body.append(a); a.click(); a.remove();
+  }
+  catch (err) { $('#backupErro').textContent = err.message; }
+  $('#btnFazerBackup').disabled = false;
+});
+$('#btnRegistro').addEventListener('click', async () => {
+  const r = await api('/api/registro');
+  $('#listaRegistro').innerHTML = r.length ? `<table><tr><th>Quando</th><th>Quem</th><th>Ação</th><th>Detalhe</th></tr>${r.map(x =>
+    `<tr><td style="white-space:nowrap">${dataHoraBR(x.quando)}</td><td>${esc(x.usuario || '')}</td><td>${esc(x.acao)}</td><td>${esc(x.detalhe || '')}</td></tr>`).join('')}</table>` : '<p class="sub">Nada registrado ainda.</p>';
+  $('#dlgRegistro').showModal();
+});
+
+function linhaOab(o = { numero: '', uf: 'SP' }) {
+  const div = document.createElement('div');
+  div.className = 'oab-linha';
+  div.innerHTML = `<input placeholder="Número da OAB" value="${esc(o.numero)}" inputmode="numeric"><input placeholder="UF" value="${esc(o.uf)}" maxlength="2"><button class="btn" type="button" title="Remover">Remover</button>`;
+  div.querySelector('button').onclick = () => div.remove();
+  return div;
+}
+$('#btnConfig').addEventListener('click', () => {
+  const cfg = estado.info.config;
+  $('#listaOabs').replaceChildren(...cfg.oabs.map(linhaOab));
+  $('#horaColeta').value = cfg.horaColeta;
+  $('#chaveDataJud').value = '';
+  $('#configErro').textContent = '';
+  $('#dlgConfig').showModal();
+});
+$('#btnAddOab').addEventListener('click', () => $('#listaOabs').append(linhaOab()));
+$('#btnSalvarConfig').addEventListener('click', async () => {
+  const oabs = [...$('#listaOabs').children].map(d => ({ numero: d.children[0].value, uf: d.children[1].value }));
+  try {
+    const cfg = await api('/api/config', { method: 'PUT', body: JSON.stringify({ oabs, horaColeta: Number($('#horaColeta').value), datajudChave: $('#chaveDataJud').value }) });
+    estado.info.config = cfg; desenharStatus(); $('#dlgConfig').close();
+  } catch (err) { $('#configErro').textContent = err.message; }
+});
+
+// ------------------------------------------------ paginas: rotas
+const POLO = { A: 'Polo ativo', P: 'Polo passivo', T: 'Terceiro' };
+const AREAS = { previdenciario: 'Previdenciário', civel: 'Cível', familia: 'Família', trabalhista: 'Trabalhista', criminal: 'Criminal', outra: 'Outra' };
+const ehIniciais = n => /^\s*([A-ZÀ-Ú]\s*\.\s*){1,8}$/.test(String(n || ''));
+const linkPessoa = nome => ehIniciais(nome) ? esc(nome) : `<a class="parte-link" href="#/pessoa/${encodeURIComponent(nome)}">${esc(nome)}</a>`;
+const SITUACOES = { ativo: 'Ativo', suspenso: 'Suspenso', arquivado: 'Arquivado', encerrado: 'Encerrado', baixado: 'Baixado' };
+const chipsProcesso = p => `${p.situacao && p.situacao !== 'ativo' && SITUACOES[p.situacao] ? `<span class="chip" style="background:var(--amber-soft);color:var(--amber)">${esc(SITUACOES[p.situacao])}</span>` : ''}${p.nao_lidas ? `<span class="chip novo">${p.nao_lidas} não lida${p.nao_lidas > 1 ? 's' : ''}</span>` : ''}${p.area && AREAS[p.area] ? `<span class="chip area">${esc(AREAS[p.area])}</span>` : ''}${(p.etiquetas || '').split(', ').filter(Boolean).map(e => `<span class="chip etq">${esc(e)}</span>`).join(' ')}`;
+const iniciais = n => String(n || '?').trim().split(/\s+/).filter(w => w.length > 2 || /^[A-Za-zÀ-ú]$/.test(w)).slice(0, 2).map(w => w[0]).join('').toUpperCase() || '?';
+const fmtCnj = d => d && d.length === 20 ? `${d.slice(0, 7)}-${d.slice(7, 9)}.${d.slice(9, 13)}.${d.slice(13, 14)}.${d.slice(14, 16)}.${d.slice(16)}` : d;
+const fmtDoc = d => d.length === 11 ? d.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4') : d.replace(/(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})/, '$1.$2.$3/$4-$5');
+const outra = () => $('#viewOutra');
+let pollProcesso = null;
+
+function mostrarView(qual) {
+  $('#viewIntimacoes').classList.toggle('oculto', qual !== 'intimacoes');
+  outra().classList.toggle('oculto', qual === 'intimacoes');
+  document.querySelectorAll('.abas a').forEach(a => a.classList.toggle('ativa', a.dataset.aba === qual));
+}
+
+async function rotear() {
+  clearTimeout(pollProcesso);
+  if (!estado.info?.usuario) return;
+  const h = decodeURIComponent(location.hash.replace(/^#\/?/, ''));
+  const [rota, ...resto] = h.split('/');
+  const arg = resto.join('/');
+  window.scrollTo(0, 0);
+  try {
+    if (rota === 'processo' && arg) return await paginaProcesso(arg.replace(/\D/g, ''));
+    if (rota === 'pessoa' && arg) return await paginaPessoa(arg);
+    if (rota === 'documento' && arg) return await paginaDocumento(arg);
+    if (rota === 'processos') return await paginaProcessos(arg || 'acompanhados');
+    if (rota === 'clientes') return await paginaClientes();
+    if (rota === 'cliente' && arg) return await paginaCliente(Number(arg));
+    mostrarView('intimacoes');
+    await carregar();
+  } catch (e) {
+    outra().innerHTML = `<div class="aviso alerta">${esc(e.message)}</div>`;
+  }
+}
+window.addEventListener('hashchange', rotear);
+
+function cartaoProcesso(p, destaque) {
+  const partes = (p.todasPartes?.length ? p.todasPartes : p.partes || []);
+  const nomesDestaque = new Set((p.partes || []).map(x => x.nome));
+  const ativos = partes.filter(x => x.polo === 'A'), passivos = partes.filter(x => x.polo === 'P'), outros = partes.filter(x => x.polo !== 'A' && x.polo !== 'P');
+  const nomeParte = x => nomesDestaque.has(x.nome) && destaque ? `<b>${esc(x.nome)}</b>` : esc(x.nome);
+  const lado = l => l.length ? l.slice(0, 2).map(nomeParte).join(', ') + (l.length > 2 ? ` e mais ${l.length - 2}` : '') : '';
+  const titulo = ativos.length || passivos.length ? `${lado(ativos) || 'Parte não informada'} x ${lado(passivos) || 'Parte não informada'}` : (lado(outros) || 'Processo ' + esc(p.numero_mascara || fmtCnj(p.numero_cnj)));
+  const papel = destaque ? (p.partes || []).map(x => `<span class="polo ${esc(x.polo || '')}">${esc(POLO[x.polo] || 'Parte')}</span>`).join('') : '';
+  return `<article class="proc-card">
+    <h3><a href="#/processo/${p.numero_cnj}">${titulo}</a>${papel}</h3>
+    <div class="proc-meta">
+      <span>Processo nº ${esc(p.numero_mascara || fmtCnj(p.numero_cnj))}</span>
+      ${p.tribunal ? `<span><span class="chip trib">${esc(p.tribunal)}</span></span>` : ''}
+      ${p.orgao ? `<span>${esc(p.orgao)}</span>` : ''}
+    </div>
+    <div class="proc-meta">
+      ${p.classe ? `<span>${esc(p.classe)}</span>` : ''}
+      ${p.ultima || p.ultima_publicacao ? `<span>Última publicação em ${dataBR(p.ultima || p.ultima_publicacao)}</span>` : ''}
+      ${p.publicacoes ? `<span>${p.publicacoes} publicaç${p.publicacoes === 1 ? 'ão' : 'ões'}</span>` : ''}
+      ${p.cliente ? `<span>Cliente: ${p.cliente_id ? `<a href="#/cliente/${p.cliente_id}">${esc(p.cliente)}</a>` : esc(p.cliente)}</span>` : ''}
+      ${chipsProcesso(p)}
+      ${p.local ? '<span class="rotulo-local">na base do app</span>' : ''}
+      ${p.acompanhar ? '<span class="chip novo">acompanhando</span>' : ''}
+      ${p.segredo ? '<span class="chip" style="background:var(--amber-soft);color:var(--amber)">segredo de justiça</span>' : ''}
+    </div>
+    <div class="proc-acoes"><a class="btn primario" href="#/processo/${p.numero_cnj}" style="text-decoration:none">Ver andamento</a></div>
+  </article>`;
+}
+
+// ------------------------------------------------ pessoa (busca por nome)
+async function paginaPessoa(nome) {
+  mostrarView('pessoa');
+  $('#q').value = nome;
+  const local = await api('/api/comunicacoes?' + new URLSearchParams({ q: nome, lida: '' }));
+  outra().innerHTML = `
+    <section class="perfil"><div class="avatar">${esc(iniciais(nome))}</div><div>
+      <h1>${esc(nome.toUpperCase())}</h1>
+      <div class="sub"><span class="girando"></span>Procurando processos com esse nome no Diário de Justiça Eletrônico Nacional...</div>
+    </div></section>`;
+  const base = await api('/api/busca/nome-local?' + new URLSearchParams({ nome })).catch(() => ({ lista: [], cliente: null }));
+  // mostra na hora o que ja esta guardado no app, enquanto o DJEN responde
+  if (base.lista.length || base.cliente) {
+    outra().innerHTML += `${base.cliente ? `<div class="aviso info">É cliente do escritório. <a href="#/cliente/${base.cliente.id}">Abrir a ficha do cliente</a></div>` : ''}
+      ${base.lista.length ? `<h2 class="secao-t">Já na base do app</h2>${base.lista.map(p => cartaoProcesso(p, true)).join('')}` : ''}`;
+  }
+  let r, erroDjen = '';
+  try { r = await api('/api/busca/nome?' + new URLSearchParams({ nome })); }
+  catch (e) { erroDjen = e.message; r = { lista: [], totalDjen: 0, lidas: 0, incompleto: false }; }
+  // junta o que ja esta guardado no app com o que veio do DJEN
+  const vistos = new Set(r.lista.map(p => p.numero_cnj));
+  for (const p of base.lista) if (!vistos.has(p.numero_cnj)) r.lista.push(p);
+  r.lista.sort((a, b) => (b.exato - a.exato) || String(b.ultima || '').localeCompare(String(a.ultima || '')));
+  const estadoP = { tribunal: '', polo: '' };
+  const tribunais = {}, polos = {};
+  for (const p of r.lista) { tribunais[p.tribunal || '?'] = (tribunais[p.tribunal || '?'] || 0) + 1; for (const x of p.partes) polos[x.polo || '?'] = (polos[x.polo || '?'] || 0) + 1; }
+  const publicacoes = r.lista.reduce((s, p) => s + p.publicacoes, 0);
+  const homonimos = new Set(r.lista.flatMap(p => p.partes.map(x => x.nome))).size;
+
+  const desenharLista = () => {
+    const l = r.lista.filter(p => (!estadoP.tribunal || p.tribunal === estadoP.tribunal) && (!estadoP.polo || p.partes.some(x => x.polo === estadoP.polo)));
+    $('#pessoaLista').innerHTML = l.length ? l.map(p => cartaoProcesso(p, true)).join('') : '<div class="vazio">Nenhum processo com esses filtros.</div>';
+    document.querySelectorAll('#pessoaFiltros .pilula').forEach(b => b.classList.toggle('ativa', (b.dataset.trib !== undefined && b.dataset.trib === estadoP.tribunal) || (b.dataset.polo !== undefined && b.dataset.polo === estadoP.polo)));
+  };
+
+  outra().innerHTML = `
+    <section class="perfil"><div class="avatar">${esc(iniciais(nome))}</div><div>
+      <h1>${esc(nome.toUpperCase())}</h1>
+      <div class="numeros">
+        <div><b>${r.lista.length}</b><span>processo${r.lista.length === 1 ? '' : 's'}</span></div>
+        <div><b>${publicacoes}</b><span>publicaç${publicacoes === 1 ? 'ão' : 'ões'} no DJEN</span></div>
+        <div><b>${Object.keys(tribunais).length}</b><span>tribuna${Object.keys(tribunais).length === 1 ? 'l' : 'is'}</span></div>
+      </div>
+    </div></section>
+    ${base.cliente ? `<div class="aviso info">É cliente do escritório. <a href="#/cliente/${base.cliente.id}">Abrir a ficha do cliente</a></div>` : ''}
+    ${erroDjen ? `<div class="aviso alerta">${esc(erroDjen)}. Mostrando só os processos que já estão guardados no app.</div>` : ''}
+    ${homonimos > 1 ? `<div class="aviso alerta">Foram encontrados ${homonimos} nomes diferentes que contêm "${esc(nome)}". Confira se o processo é mesmo da pessoa: pode haver homônimos.</div>` : ''}
+    ${r.incompleto ? `<div class="aviso alerta">Nome muito comum: o DJEN devolveu mais de ${r.lidas} publicações e só as ${r.lidas} mais recentes foram lidas. Use o nome completo para resultados melhores.</div>` : ''}
+    ${local.total ? `<div class="aviso info">Também aparece em ${local.total} intimaç${local.total === 1 ? 'ão' : 'ões'} da sua OAB. <a href="#/" id="verNasIntimacoes">Ver nas intimações</a></div>` : ''}
+    ${r.lista.length ? `<div class="barra-filtros" id="pessoaFiltros">
+      <span class="rotulo">Tribunal</span>
+      <button class="pilula" data-trib="">Todos</button>
+      ${Object.entries(tribunais).sort((a, b) => b[1] - a[1]).map(([t, n]) => `<button class="pilula" data-trib="${esc(t)}">${esc(t)}<small>${n}</small></button>`).join('')}
+      <span class="rotulo" style="margin-left:10px">Polo</span>
+      <button class="pilula" data-polo="">Todos</button>
+      ${['A', 'P'].filter(k => polos[k]).map(k => `<button class="pilula" data-polo="${k}">${k === 'A' ? 'Ativo' : 'Passivo'}<small>${polos[k]}</small></button>`).join('')}
+    </div>` : ''}
+    <div id="pessoaLista">${r.lista.length ? '' : `<div class="vazio">Nenhum processo encontrado com esse nome no DJEN.<br><span class="sub">O DJEN só mostra processos que tiveram publicações a partir da sua criação. Processos em segredo de justiça não aparecem.</span></div>`}</div>
+    <p class="sub" style="margin-top:18px">Fontes: DJEN (comunicações processuais públicas) e a base do próprio app. Processos em segredo de justiça só aparecem aqui se forem do cliente. A busca considera o nome como aparece nas publicações; CPF não é informado pelo DJEN.</p>`;
+  if (r.lista.length) desenharLista();
+  $('#pessoaFiltros')?.addEventListener('click', e => {
+    const b = e.target.closest('.pilula'); if (!b) return;
+    if (b.dataset.trib !== undefined) estadoP.tribunal = b.dataset.trib;
+    if (b.dataset.polo !== undefined) estadoP.polo = b.dataset.polo;
+    desenharLista();
+  });
+  $('#verNasIntimacoes')?.addEventListener('click', () => { estado.q = nome; estado.lida = ''; estado.tribunal = ''; estado.pagina = 1; });
+}
+
+// ------------------------------------------------ CPF / CNPJ
+async function paginaDocumento(doc) {
+  mostrarView('pessoa');
+  const r = await api('/api/busca/documento?doc=' + doc);
+  outra().innerHTML = `
+    <section class="perfil"><div class="avatar">${doc.length === 11 ? 'CPF' : 'CNPJ'}</div><div>
+      <h1>${fmtDoc(doc)}</h1>
+      <div class="sub">${r.lista.length} processo${r.lista.length === 1 ? '' : 's'} com esse ${doc.length === 11 ? 'CPF' : 'CNPJ'} cadastrado no app</div>
+    </div></section>
+    ${(r.clientes || []).map(c => `<div class="aviso info">Cliente do escritório: <a href="#/cliente/${c.id}">${esc(c.nome)}</a></div>`).join('')}
+    <div class="aviso alerta">As bases públicas do CNJ (DJEN e DataJud) não permitem busca por CPF ou CNPJ. O app encontra aqui os processos em que você cadastrou esse documento (na página do processo, campo "CPF/CNPJ da parte"). Para achar processos de alguém que ainda não está no app, busque pelo nome completo.</div>
+    ${r.lista.map(p => cartaoProcesso(p, false)).join('') || '<div class="vazio">Nenhum processo com esse documento ainda.</div>'}`;
+}
+
+// ------------------------------------------------ lista de processos
+const filtrosProc = { area: '', etiqueta: '', situacao: '', tribunal: '', naolida: '', q: '' };
+async function paginaProcessos(filtro) {
+  mostrarView('processos');
+  const r = await api('/api/processos?' + new URLSearchParams({ filtro, ...filtrosProc }));
+  const contArea = Object.fromEntries((r.porArea || []).map(a => [a.area, a.n]));
+  const pil = (tipo, valor, rotulo, n) => `<button class="pilula ${filtrosProc[tipo] === valor ? 'ativa' : ''}" data-f="${tipo}" data-v="${esc(valor)}">${esc(rotulo)}${n != null ? `<small>${n}</small>` : ''}</button>`;
+  const barraArea = `<div class="barra-filtros" id="filtrosExtra"><span class="rotulo">Área</span>${pil('area', '', 'Todas')}${Object.entries(AREAS).filter(([k]) => contArea[k]).map(([k, n]) => pil('area', k, n, contArea[k])).join('')}${contArea.sem ? pil('area', 'sem', 'Sem área', contArea.sem) : ''}
+    ${(r.etiquetas || []).length ? `<span class="rotulo" style="margin-left:10px">Etiqueta</span>${pil('etiqueta', '', 'Todas')}${r.etiquetas.slice(0, 15).map(e => pil('etiqueta', e.nome, e.nome, e.n)).join('')}` : ''}
+    <input id="qProc" type="search" placeholder="Filtrar por número, cliente, classe ou etiqueta" value="${esc(filtrosProc.q)}" style="margin-left:auto;min-width:240px;padding:5px 12px;border:1px solid var(--line);border-radius:999px;background:var(--card)"></div>`;
+  const contSit = Object.fromEntries((r.porSituacao || []).map(a => [a.situacao, a.n]));
+  const tribs = (r.porTribunal || []).filter(t => t.tribunal);
+  const barraSit = `<div class="barra-filtros" id="filtrosExtra2"><span class="rotulo">Situação</span>${pil('situacao', '', 'Todas')}${Object.entries(r.situacoes || {}).filter(([k]) => contSit[k]).map(([k, n]) => pil('situacao', k, n, contSit[k])).join('')}
+    ${tribs.length > 1 ? `<span class="rotulo" style="margin-left:10px">Tribunal</span>${pil('tribunal', '', 'Todos')}${tribs.slice(0, 10).map(t => pil('tribunal', t.tribunal, t.tribunal, t.n)).join('')}` : ''}
+    <button class="pilula ${filtrosProc.naolida === '1' ? 'ativa' : ''}" style="margin-left:10px" data-f="naolida" data-v="${filtrosProc.naolida === '1' ? '' : '1'}">Com publicação não lida</button></div>`;
+  const c = r.contagens || {};
+  const filtros = [['acompanhados', 'Acompanhados', c.acompanhados], ['minha', 'Da minha OAB', c.minha], ['terceiros', 'De terceiros', c.terceiros], ['todos', 'Todos', c.todos]];
+  outra().innerHTML = `
+    <div class="cabecalho"><div><h1>Processos</h1><div class="sub">Os da sua OAB entram sozinhos. Para qualquer outro, consulte pelo número ou busque pelo nome da parte.</div></div></div>
+    <form id="formConsultar" class="perfil" style="padding:14px 16px;gap:10px;flex-wrap:wrap">
+      <input id="numConsultar" placeholder="Número do processo (CNJ), de qualquer parte" style="flex:1;min-width:220px;padding:9px 12px;border:1px solid var(--line);border-radius:8px;background:var(--bg)">
+      <button class="btn primario">Consultar</button>
+    </form>
+    <details id="painelImportar" class="perfil" style="display:block;padding:14px 16px"><summary class="sub" style="cursor:pointer"><b>Importar lista de números</b> · cole vários processos de uma vez</summary>
+      <div style="margin-top:10px"><textarea id="txtLista" rows="6" placeholder="Cole aqui os números dos processos, um por linha ou separados por vírgula. Aceita com ou sem pontuação. Até 500 por vez." style="width:100%;padding:9px 12px;border:1px solid var(--line);border-radius:8px;background:var(--bg);font:inherit"></textarea></div>
+      <div class="campos" style="margin-top:8px">
+        <div><label>Área (opcional)</label><select id="impArea"><option value="">Sem área</option>${Object.entries(AREAS).map(([k, n]) => `<option value="${k}">${n}</option>`).join('')}</select></div>
+        <div><label>Etiquetas (opcional)</label><input id="impEtq" placeholder="ex.: importado 18/11"></div>
+        <div><label>Cliente (opcional)</label><input id="impCli" placeholder="vale para todos da lista"></div>
+      </div>
+      <div style="margin-top:8px"><button class="btn primario" id="btnImportar">Importar e acompanhar</button> <span class="sub" id="impMsg"></span></div>
+      <div class="sub" style="margin-top:6px">O app faz um backup antes de importar. As publicações (DJEN) chegam na hora; os andamentos (DataJud) chegam aos poucos, cerca de 10 segundos por processo.</div>
+    </details>
+    <div class="barra-filtros">${filtros.map(([k, n, q]) => `<a class="pilula ${k === filtro ? 'ativa' : ''}" style="text-decoration:none" href="#/processos/${k}">${n}<small>${q || 0}</small></a>`).join('')}</div>
+    ${barraArea}
+    ${barraSit}
+    ${r.lista.map(p => cartaoProcesso(p, false)).join('') || `<div class="vazio">${filtro === 'acompanhados' ? 'Nenhum processo acompanhado. Abra um processo e clique em "Acompanhar".' : 'Nenhum processo aqui ainda.'}</div>`}`;
+  $('#formConsultar').addEventListener('submit', e => {
+    e.preventDefault();
+    const d = $('#numConsultar').value.replace(/\D/g, '');
+    if (d.length !== 20) { alert('O número CNJ tem 20 dígitos. Exemplo: 0000000-00.0000.0.00.0000'); return; }
+    location.hash = '#/processo/' + d;
+  });
+  $('#filtrosExtra').addEventListener('click', e => {
+    const b = e.target.closest('[data-f]'); if (!b) return;
+    filtrosProc[b.dataset.f] = b.dataset.v; paginaProcessos(filtro);
+  });
+  $('#qProc').addEventListener('change', e => { filtrosProc.q = e.target.value.trim(); paginaProcessos(filtro); });
+  $('#filtrosExtra2').addEventListener('click', e => {
+    const b = e.target.closest('[data-f]'); if (!b) return;
+    filtrosProc[b.dataset.f] = b.dataset.v; paginaProcessos(filtro);
+  });
+  $('#btnImportar').onclick = async () => {
+    const msg = $('#impMsg'); const texto = $('#txtLista').value;
+    if (!texto.trim()) { msg.textContent = 'Cole os números primeiro.'; return; }
+    $('#btnImportar').disabled = true; msg.innerHTML = '<span class="girando"></span>Preparando';
+    try {
+      const r = await api('/api/importar-lista', { method: 'POST', body: JSON.stringify({ texto, area: $('#impArea').value, etiquetas: $('#impEtq').value, cliente: $('#impCli').value }) });
+      msg.textContent = `${r.novos} novo${r.novos === 1 ? '' : 's'}, ${r.jaExistiam} já existia${r.jaExistiam === 1 ? '' : 'm'}${r.invalidos.length ? ', ' + r.invalidos.length + ' inválido' + (r.invalidos.length === 1 ? '' : 's') + ' (' + r.invalidos.slice(0, 3).join(', ') + ')' : ''}${r.excedentes ? ', ' + r.excedentes + ' ficaram de fora pelo limite de 500' : ''}.`;
+      acompanharImportacao();
+    } catch (e) { msg.textContent = e.message; }
+    $('#btnImportar').disabled = false;
+  };
+  acompanharImportacao(true);
+}
+async function acompanharImportacao(soSeAndando) {
+  const msg = $('#impMsg'); if (!msg) return;
+  let i = null; try { i = (await api('/api/importar-lista')).importacao; } catch { return; }
+  if (!i) return;
+  if (!i.terminou) { $('#painelImportar').open = true; msg.innerHTML = `<span class="girando"></span>Consultando o DJEN: ${i.feitos} de ${i.total}. O DataJud continua em segundo plano.`; setTimeout(acompanharImportacao, 4000); }
+  else if (!soSeAndando) { msg.textContent += ` Importação concluída${i.erros ? ' (' + i.erros + ' com erro no DJEN)' : ''}. Atualize a página para ver a lista.`; }
+}
+
+// ------------------------------------------------ clientes
+async function paginaClientes() {
+  mostrarView('clientes');
+  outra().innerHTML = `
+    <div class="cabecalho"><div><h1>Clientes</h1><div class="sub">Fichas dos clientes do escritório e os processos de cada um.</div></div></div>
+    <form id="formNovoCliente" class="perfil" style="padding:14px 16px;gap:10px;flex-wrap:wrap;display:flex">
+      <input id="ncNome" placeholder="Nome do novo cliente" style="flex:2;min-width:200px;padding:9px 12px;border:1px solid var(--line);border-radius:8px;background:var(--bg)">
+      <input id="ncDoc" placeholder="CPF ou CNPJ" inputmode="numeric" style="flex:1;min-width:140px;padding:9px 12px;border:1px solid var(--line);border-radius:8px;background:var(--bg)">
+      <input id="ncTel" placeholder="Telefone" style="flex:1;min-width:140px;padding:9px 12px;border:1px solid var(--line);border-radius:8px;background:var(--bg)">
+      <button class="btn primario">Cadastrar</button>
+      <div class="erro" id="ncErro" style="flex-basis:100%;margin:0"></div>
+    </form>
+    <div class="barra-filtros"><input id="qCli" type="search" placeholder="Procurar por nome ou CPF" style="flex:1;max-width:360px;padding:6px 12px;border:1px solid var(--line);border-radius:999px;background:var(--card)"></div>
+    <div id="listaClientes"></div>`;
+  const desenhar = async () => {
+    const r = await api('/api/clientes?' + new URLSearchParams({ q: $('#qCli').value }));
+    $('#listaClientes').innerHTML = r.lista.length ? `<table class="tabela"><tr><th>Cliente</th><th>CPF/CNPJ</th><th>Telefone</th><th>Processos</th><th>Última publicação</th></tr>${r.lista.map(c =>
+      `<tr><td><a href="#/cliente/${c.id}">${esc(c.nome)}</a></td><td>${c.cpf_cnpj ? fmtDoc(c.cpf_cnpj) : ''}</td><td>${esc(c.telefone || '')}</td><td>${c.processos}</td><td>${dataBR(c.ultima_publicacao)}</td></tr>`).join('')}</table>`
+      : `<div class="vazio">${$('#qCli').value ? 'Nenhum cliente com esse nome.' : 'Nenhum cliente cadastrado ainda. Cadastre acima ou informe o cliente na página de um processo.'}</div>`;
+  };
+  $('#qCli').addEventListener('input', () => { clearTimeout(desenhar.t); desenhar.t = setTimeout(desenhar, 250); });
+  $('#formNovoCliente').addEventListener('submit', async e => {
+    e.preventDefault(); $('#ncErro').textContent = '';
+    try {
+      const r = await api('/api/clientes', { method: 'POST', body: JSON.stringify({ nome: $('#ncNome').value, cpf_cnpj: $('#ncDoc').value, telefone: $('#ncTel').value }) });
+      location.hash = '#/cliente/' + r.id;
+    } catch (err) { $('#ncErro').textContent = err.message; }
+  });
+  await desenhar();
+}
+
+async function paginaCliente(id) {
+  mostrarView('clientes');
+  const r = await api('/api/clientes/' + id);
+  const c = r.cliente;
+  outra().innerHTML = `
+    <a class="voltar" href="#/clientes">Clientes</a>
+    <section class="perfil" style="display:block">
+      <div style="display:flex;gap:16px;align-items:center"><div class="avatar">${esc(iniciais(c.nome))}</div><div>
+        <h1>${esc(c.nome)}</h1>
+        <div class="numeros"><div><b>${r.processos.length}</b><span>processo${r.processos.length === 1 ? '' : 's'}</span></div></div>
+      </div></div>
+      <div class="campos">
+        <div class="largo"><label>Nome</label><input id="cNome" value="${esc(c.nome)}"></div>
+        <div><label>CPF/CNPJ</label><input id="cDoc" value="${esc(c.cpf_cnpj ? fmtDoc(c.cpf_cnpj) : '')}" inputmode="numeric"></div>
+        <div><label>Telefone</label><input id="cTel" value="${esc(c.telefone || '')}"></div>
+        <div><label>E-mail</label><input id="cEmail" value="${esc(c.email || '')}"></div>
+        <div class="largo"><label>Observações</label><textarea id="cObs" rows="3">${esc(c.observacoes || '')}</textarea></div>
+      </div>
+      <div class="proc-acoes">
+        <button class="btn primario" id="btnSalvarCli">Salvar</button>
+        <a class="btn" style="text-decoration:none;color:inherit" href="#/pessoa/${encodeURIComponent(c.nome)}">Procurar processos com esse nome</a>
+        <button class="btn" id="btnExcluirCli" style="margin-left:auto">Excluir cliente</button>
+        <span class="sub" id="cliMsg"></span>
+      </div>
+    </section>
+    <h2 class="secao-t">Processos do cliente</h2>
+    <form id="formVincular" class="perfil" style="padding:12px 16px;gap:10px;flex-wrap:wrap;display:flex">
+      <input id="numVincular" placeholder="Vincular processo pelo número CNJ" style="flex:1;min-width:220px;padding:8px 12px;border:1px solid var(--line);border-radius:8px;background:var(--bg)">
+      <button class="btn">Vincular</button>
+    </form>
+    ${r.processos.map(p => cartaoProcesso(p, false)).join('') || '<div class="vazio">Nenhum processo vinculado ainda.</div>'}`;
+  $('#btnSalvarCli').onclick = async () => {
+    try {
+      await api('/api/clientes/' + id, { method: 'PATCH', body: JSON.stringify({ nome: $('#cNome').value, cpf_cnpj: $('#cDoc').value, telefone: $('#cTel').value, email: $('#cEmail').value, observacoes: $('#cObs').value }) });
+      $('#cliMsg').textContent = 'Salvo.';
+    } catch (err) { $('#cliMsg').textContent = err.message; }
+  };
+  $('#btnExcluirCli').onclick = async () => {
+    if (!confirm(`Excluir a ficha de ${c.nome}? Os processos continuam no app, só deixam de ter cliente vinculado.`)) return;
+    await api('/api/clientes/' + id, { method: 'DELETE', body: '{}' });
+    location.hash = '#/clientes';
+  };
+  $('#formVincular').addEventListener('submit', async e => {
+    e.preventDefault();
+    const d = $('#numVincular').value.replace(/\D/g, '');
+    if (d.length !== 20) { alert('O número CNJ tem 20 dígitos.'); return; }
+    await api('/api/processos/' + d, { method: 'PATCH', body: JSON.stringify({ cliente_id: id }) });
+    paginaCliente(id);
+  });
+}
+
+// ------------------------------------------------ pagina do processo
+async function paginaProcesso(cnj) {
+  mostrarView('processo');
+  if (cnj.length !== 20) { outra().innerHTML = '<div class="aviso alerta">Número de processo inválido: o CNJ tem 20 dígitos.</div>'; return; }
+  $('#q').value = fmtCnj(cnj);
+  let d = null;
+  try { d = await api('/api/processos/' + cnj); } catch (e) { d = null; }
+  // nunca consultado (nao existe, ou veio so de uma busca por nome): consulta DJEN pelo numero e poe na fila do DataJud
+  if (!d || (!d.processo.dj_status && !d.consultandoDataJud) || !d.processo.djen_consultado_em) {
+    outra().innerHTML = `<div class="perfil"><div class="sub"><span class="girando"></span>Consultando ${fmtCnj(cnj)} no DJEN e no DataJud...</div></div>`;
+    const r = await api(`/api/processos/${cnj}/consultar`, { method: 'POST', body: '{}' });
+    d = await api('/api/processos/' + cnj);
+    if (r.erroDjen) d.erroDjen = r.erroDjen;
+  }
+  desenharProcesso(cnj, d);
+  if (d.consultandoDataJud) pollProcesso = setTimeout(() => location.hash.endsWith(cnj) && atualizarProcesso(cnj), 5000);
+}
+async function atualizarProcesso(cnj) {
+  const d = await api('/api/processos/' + cnj);
+  const abertos = [...document.querySelectorAll('.evento .texto:not(.curto)')].map(e => e.closest('.evento').dataset.k);
+  desenharProcesso(cnj, d);
+  abertos.forEach(k => document.querySelector(`.evento[data-k="${k}"] .texto`)?.classList.remove('curto'));
+  if (d.consultandoDataJud) pollProcesso = setTimeout(() => location.hash.endsWith(cnj) && atualizarProcesso(cnj), 5000);
+}
+
+// numeros de outros processos citados no texto viram link (ex.: processo principal)
+function ligarProcessos(html, atual) {
+  return html.replace(/\b(\d{7}-\d{2}\.\d{4}\.\d\.\d{2}\.\d{4})\b/g, (m) => {
+    const d = m.replace(/\D/g, '');
+    return d === atual ? m : `<a href="#/processo/${d}">${m}</a>`;
+  });
+}
+
+function desenharProcesso(cnj, d) {
+  const p = d.processo;
+  const ativos = p.partes.filter(x => x.polo === 'A'), passivos = p.partes.filter(x => x.polo === 'P'), outros = p.partes.filter(x => x.polo !== 'A' && x.polo !== 'P');
+  const listaPartes = (rot, l) => l.length ? `<div><span>${rot}</span>${l.map(x => linkPessoa(x.nome)).join('<br>')}</div>` : '';
+  let statusDj = '';
+  if (d.consultandoDataJud) statusDj = `<div class="aviso info"><span class="girando"></span>Buscando os andamentos no DataJud${d.posicaoFila > 1 ? ` (${d.posicaoFila - 1} na frente na fila)` : ''}. O servidor do CNJ costuma levar cerca de 1 minuto; a página se atualiza sozinha.</div>`;
+  else if (p.dj_status === 'nao_encontrado') statusDj = `<div class="aviso alerta">${esc(p.dj_erro)}</div>`;
+  else if (p.dj_status === 'erro') statusDj = `<div class="aviso alerta">DataJud: ${esc(p.dj_erro)}. <button class="link-btn" style="display:inline" id="btnTentarDj">Tentar de novo</button></div>`;
+  const erroDjen = d.erroDjen || p.djen_erro;
+
+  const eventos = [
+    ...d.movimentos.map((m, i) => ({ k: 'm' + i, data: m.data_hora, tipo: 'mov', m })),
+    ...d.comunicacoes.map(c => ({ k: 'c' + c.id, data: c.data_disponibilizacao + 'T12:00:00', tipo: 'pub', c }))
+  ].sort((a, b) => String(b.data).localeCompare(String(a.data)));
+
+  outra().innerHTML = `
+    <a class="voltar" href="javascript:history.back()">Voltar</a>
+    <section class="perfil" style="display:block">
+      <div class="linha1"><span class="chip trib">${esc(p.tribunal || '')}</span>${p.grau ? `<span class="chip">${esc(p.grau)}</span>` : ''}${p.segredo ? '<span class="chip" style="background:var(--amber-soft);color:var(--amber);border-color:var(--amber)">segredo de justiça</span>' : ''}${p.minha_oab ? '<span class="chip novo">da minha OAB</span>' : ''}${p.acompanhar ? '<span class="chip novo">acompanhando</span>' : ''}${chipsProcesso(p)}${p.cliente_id ? `<span>Cliente: <a href="#/cliente/${p.cliente_id}">${esc(p.cliente)}</a></span>` : ''}</div>
+      <div class="numero" style="font-size:22px">${esc(p.numero_mascara || fmtCnj(cnj))} <button data-copiar="${esc(p.numero_mascara || fmtCnj(cnj))}">copiar</button></div>
+      <div class="orgao">${esc(p.classe || '')}${p.orgao ? ' · ' + esc(p.orgao) : ''}</div>
+      <div class="grade">
+        <div><span>Tribunal</span>${esc(p.tribunal || 'Não identificado')}</div>
+        <div><span>Foro</span>${p.local.foro ? esc(p.local.foro) : '<span class="sub" style="text-transform:none;letter-spacing:0">Não informado</span>'}${!p.local.foro || !d.comunicacoes.length ? `<div class="sub">Código da unidade de origem: ${esc(p.local.codigoOrigem)}</div>` : ''}</div>
+        <div><span>Vara</span>${p.local.vara ? esc(p.local.vara) : '<span class="sub" style="text-transform:none;letter-spacing:0">Não informada</span>'}</div>
+        ${listaPartes('Polo ativo', ativos)}${listaPartes('Polo passivo', passivos)}${listaPartes('Outras partes', outros)}
+        ${p.segredo && p.partes.length ? `<div><span>Partes</span><span class="sub" style="text-transform:none;letter-spacing:0;display:inline">Publicadas só com as iniciais, por causa do segredo de justiça.</span></div>` : ''}
+        ${p.assuntos.length ? `<div><span>Assuntos</span>${p.assuntos.map(esc).join('<br>')}</div>` : ''}
+        ${p.data_ajuizamento ? `<div><span>Ajuizamento</span>${dataBR(p.data_ajuizamento)}</div>` : ''}
+        ${p.sistema ? `<div><span>Sistema</span>${esc(p.sistema)}</div>` : ''}
+        <div><span>Situação</span>${esc(SITUACOES[p.situacao] || 'Ativo')}</div>
+        ${p.fase ? `<div><span>Fase</span>${esc(p.fase)}</div>` : ''}
+        ${p.tipo_acao ? `<div><span>Tipo de ação</span>${esc(p.tipo_acao)}</div>` : ''}
+        <div><span>Responsável</span>${p.responsavel ? esc(p.responsavel) : '<span class="sub" style="text-transform:none;letter-spacing:0">Não informado</span>'}</div>
+        ${p.valor_causa ? `<div><span>Valor da causa</span>${Number(p.valor_causa).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</div>` : ''}
+        ${p.observacoes ? `<div style="grid-column:1/-1"><span>Observações</span>${esc(p.observacoes)}</div>` : ''}
+        ${p.dj_base_em ? `<div><span>Andamentos atualizados pelo CNJ em</span>${dataBR(p.dj_base_em)}</div>` : ''}
+      </div>
+      <div class="proc-acoes">
+        <button class="btn ${p.acompanhar ? '' : 'primario'}" id="btnAcompanhar">${p.acompanhar ? 'Deixar de acompanhar' : 'Acompanhar este processo'}</button>
+        <button class="btn" id="btnReconsultar" ${d.consultandoDataJud ? 'disabled' : ''}>Atualizar agora</button>
+      </div>
+      <details style="margin-top:12px" ${p.cliente || p.area || p.etiquetas ? '' : ''}><summary class="sub" style="cursor:pointer">Editar dados: cliente, área, situação, fase, responsável, valor, etiquetas e observações</summary>
+        <div class="campos">
+          <div><label>Cliente</label><input id="fCliente" list="dlClientes" value="${esc(p.cliente || '')}" placeholder="nome do cliente"><datalist id="dlClientes"></datalist></div>
+          <div><label>Área</label><select id="fArea"><option value="">Sem área</option>${Object.entries(AREAS).map(([k, n]) => `<option value="${k}" ${p.area === k ? 'selected' : ''}>${n}</option>`).join('')}</select></div>
+          <div><label>Etiquetas (separe por vírgula)</label><input id="fEtiquetas" value="${esc(p.etiquetas || '')}" placeholder="ex.: urgente, perícia"></div>
+          <div><label>Caso interno</label><input id="fCaso" value="${esc(p.caso_interno || '')}"></div>
+          <div><label>CPF/CNPJ da parte</label><input id="fDoc" value="${esc(p.cpf_cnpj ? fmtDoc(p.cpf_cnpj) : '')}" inputmode="numeric"></div>
+          <div><label>Situação</label><select id="fSituacao">${Object.entries(SITUACOES).map(([k, n]) => `<option value="${k}" ${(p.situacao || 'ativo') === k ? 'selected' : ''}>${n}</option>`).join('')}</select></div>
+          <div><label>Fase</label><input id="fFase" value="${esc(p.fase || '')}" placeholder="ex.: instrução, sentença, execução"></div>
+          <div><label>Tipo de ação</label><input id="fTipoAcao" value="${esc(p.tipo_acao || '')}" placeholder="ex.: inventário, alimentos"></div>
+          <div><label>Responsável</label><input id="fResp" value="${esc(p.responsavel || '')}"></div>
+          <div><label>Valor da causa</label><input id="fValor" value="${p.valor_causa != null ? Number(p.valor_causa).toLocaleString('pt-BR', { minimumFractionDigits: 2 }) : ''}" placeholder="ex.: 118.316,55" inputmode="decimal"></div>
+          <div style="grid-column:1/-1"><label>Observações</label><textarea id="fObs" rows="3" style="width:100%;padding:9px 12px;border:1px solid var(--line);border-radius:8px;background:var(--bg);font:inherit">${esc(p.observacoes || '')}</textarea></div>
+        </div>
+        <div style="margin-top:8px"><button class="btn" id="btnSalvarDados">Salvar</button> <span class="sub" id="salvoMsg"></span></div>
+      </details>
+    </section>
+    ${d.resumo ? `<section class="perfil" style="display:block"><div class="sub" style="margin-bottom:6px"><b>Resumo do processo</b> · gerado automaticamente com os dados guardados no app</div><div>${esc(d.resumo.texto)}</div>${d.resumo.pontos.length ? `<div class="sub" style="margin-top:10px"><b>Pontos de atenção</b></div><ul style="margin:6px 0 0 18px">${d.resumo.pontos.map(x => `<li>${esc(x)}</li>`).join('')}</ul>` : ''}</section>` : ''}
+    ${statusDj}
+    ${erroDjen ? `<div class="aviso alerta">DJEN: ${esc(erroDjen)}</div>` : ''}
+    <h2 class="secao-t">Andamento <span class="sub">(${d.movimentos.length} movimento${d.movimentos.length === 1 ? '' : 's'} do DataJud · ${d.comunicacoes.length} publicaç${d.comunicacoes.length === 1 ? 'ão' : 'ões'} do DJEN)</span></h2>
+    ${eventos.length ? `<div class="linha-tempo">${eventos.map(ev => ev.tipo === 'mov' ? `
+      <div class="evento" data-k="${ev.k}"><div class="quando">${dataBR(ev.m.data_hora)}${ev.m.grau ? ' · ' + esc(ev.m.grau) : ''}</div>
+        <div class="oque">${esc(ev.m.nome)}</div>${ev.m.complementos.length ? `<div class="sub">${ev.m.complementos.map(esc).join(' · ')}</div>` : ''}</div>` : `
+      <div class="evento pub" data-k="${ev.k}"><div class="quando">${dataBR(ev.c.data_disponibilizacao)} · Publicação no DJEN${ev.c.minha ? ' · sua intimação' : ''}</div>
+        <div class="oque">${esc(ev.c.tipo_comunicacao || 'Comunicação')}${ev.c.tipo_documento && ev.c.tipo_documento !== ev.c.tipo_comunicacao ? ' · ' + esc(ev.c.tipo_documento) : ''}</div>
+        <div class="texto ${(ev.c.texto_limpo || '').length > 300 ? 'curto' : ''}">${ligarProcessos(esc(ev.c.texto_limpo), cnj)}</div>
+        <div class="rodape-card">${(ev.c.texto_limpo || '').length > 300 ? '<button data-exp>Ler tudo</button>' : ''}${ev.c.link ? `<a href="${esc(ev.c.link)}" target="_blank" rel="noopener noreferrer">Abrir no tribunal</a>` : ''}</div></div>`).join('')}</div>`
+      : `<div class="vazio">${d.consultandoDataJud ? 'Aguardando o DataJud...' : 'Nenhuma publicação no DJEN e nenhum andamento no DataJud para este número.<br><span class="sub">Pode ser um processo em segredo de justiça que ainda não teve publicação no DJEN, ou um número digitado errado. O tribunal e o código do foro acima vêm do próprio número.</span>'}</div>`}`;
+
+  outra().querySelector('[data-copiar]').onclick = e => { navigator.clipboard?.writeText(e.target.dataset.copiar); e.target.textContent = 'copiado'; };
+  outra().querySelectorAll('[data-exp]').forEach(b => b.onclick = () => { const t = b.closest('.evento').querySelector('.texto'); t.classList.toggle('curto'); b.textContent = t.classList.contains('curto') ? 'Ler tudo' : 'Recolher'; });
+  $('#btnAcompanhar').onclick = async () => { await api('/api/processos/' + cnj, { method: 'PATCH', body: JSON.stringify({ acompanhar: !p.acompanhar }) }); atualizarProcesso(cnj); };
+  $('#btnReconsultar').onclick = async () => {
+    $('#btnReconsultar').disabled = true; $('#btnReconsultar').innerHTML = '<span class="girando"></span>Atualizando';
+    await api(`/api/processos/${cnj}/consultar`, { method: 'POST', body: '{}' }); clearTimeout(pollProcesso); atualizarProcesso(cnj);
+  };
+  const tentar = $('#btnTentarDj'); if (tentar) tentar.onclick = () => $('#btnReconsultar').click();
+  $('#btnSalvarDados').onclick = async () => {
+    await api('/api/processos/' + cnj, { method: 'PATCH', body: JSON.stringify({ cliente: $('#fCliente').value, area: $('#fArea').value, etiquetas: $('#fEtiquetas').value, caso_interno: $('#fCaso').value, cpf_cnpj: $('#fDoc').value, situacao: $('#fSituacao').value, fase: $('#fFase').value, tipo_acao: $('#fTipoAcao').value, responsavel: $('#fResp').value, valor_causa: $('#fValor').value, observacoes: $('#fObs').value }) });
+    $('#salvoMsg').textContent = 'Salvo. Um cliente novo ganha ficha na aba Clientes.';
+    setTimeout(() => atualizarProcesso(cnj), 900);
+  };
+  api('/api/clientes').then(r => { const dl = $('#dlClientes'); if (dl) dl.innerHTML = r.lista.map(c => `<option value="${esc(c.nome)}">`).join(''); }).catch(() => {});
+}
+
+iniciar();
+if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(() => {});
+</script>
+</body>
+</html>
